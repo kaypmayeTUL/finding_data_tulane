@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finding Data | Tulane University Libraries</title>
+<style>
+:root {
+  --tulane-green: #285C4D;
+  --tulane-green-dark: #1e4a3d;
+  --tulane-blue: #71C5E8;
+  --tulane-blue-light: #a8ddf2;
+  --storm-shutters: #00778B;
+  --medallion: #CC9900;
+  --olive-branch: #658D1B;
+  --verdigris: #71DBD4;
+  --light-bg: #f0f4f2;
+  --text-dark: #2c3e50;
+  --text-soft: #5a6c7d;
+  --white: #fff;
+  --card-bg: #fff;
+  --border-light: #e0e8e4;
+  --shadow: 0 2px 10px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--light-bg);
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* NAV BAR */
+.nav-container {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--tulane-green);
+  padding: 10px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+.nav-title {
+  color: var(--white); font-size: 1.05rem; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-title .compass { color: var(--medallion); font-size: 1.15rem; }
+.nav-controls { display: flex; align-items: center; gap: 12px; }
+.page-selector {
+  padding: 7px 11px;
+  border: 2px solid var(--tulane-blue);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--tulane-green);
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-width: 260px;
+  font-weight: 500;
+}
+.nav-btn {
+  background: var(--tulane-blue);
+  color: var(--tulane-green-dark);
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+.nav-btn:hover:not(:disabled) { background: var(--white); transform: translateY(-2px); }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.page-indicator {
+  color: var(--tulane-blue); font-size: 0.95rem;
+  min-width: 80px; text-align: center; font-weight: 600;
+}
+.progress-bar {
+  position: fixed; bottom: 0; left: 0;
+  height: 4px; background: var(--tulane-blue);
+  transition: width 0.3s ease; z-index: 1001;
+}
+
+/* PRESENTATION LAYOUT */
+.presentation {
+  margin-top: 70px; padding: 20px;
+  max-width: 1300px; margin-left: auto; margin-right: auto;
+  padding-bottom: 40px;
+}
+.slide { display: none; animation: fadeIn 0.4s ease; }
+.slide.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TITLE SLIDE */
+.title-slide {
+  text-align: center; padding: 80px 40px;
+  background: linear-gradient(135deg, var(--tulane-green) 0%, var(--storm-shutters) 100%);
+  border-radius: 16px; color: var(--white);
+  min-height: calc(100vh - 130px);
+  display: flex; flex-direction: column; justify-content: center;
+  box-shadow: var(--shadow-lg);
+  position: relative; overflow: hidden;
+}
+.title-slide::before {
+  content: '📊'; position: absolute; top: 40px; right: 50px;
+  font-size: 2.5rem; opacity: 0.4;
+}
+.title-slide::after {
+  content: ''; position: absolute; bottom: -100px; left: -100px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(204,153,0,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.title-slide .kicker {
+  font-size: 0.9rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--medallion); margin-bottom: 24px; font-weight: 600;
+}
+.title-slide h1 {
+  font-size: 3.5rem; line-height: 1.1;
+  margin-bottom: 24px; font-weight: 700; letter-spacing: -0.01em;
+}
+.title-slide h1 em { font-style: italic; color: var(--tulane-blue-light); font-weight: 500; }
+.title-slide .subtitle {
+  font-size: 1.35rem; max-width: 720px;
+  margin: 0 auto 40px; line-height: 1.5;
+  color: rgba(255,255,255,0.9);
+}
+.title-slide .presenter-block {
+  border-top: 1px solid rgba(255,255,255,0.25);
+  padding-top: 24px; margin-top: 24px;
+  max-width: 640px; margin-left: auto; margin-right: auto;
+}
+.title-slide .presenter-name { font-size: 1.3rem; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.title-slide .presenter-role { font-size: 0.95rem; color: rgba(255,255,255,0.75); }
+.title-slide .institution {
+  font-size: 0.8rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--medallion); margin-top: 16px;
+}
+
+/* CONTENT SLIDES */
+.content-slide {
+  background: var(--card-bg); border-radius: 16px;
+  padding: 45px 55px 55px;
+  min-height: calc(100vh - 130px);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.slide-badge {
+  display: inline-block; padding: 5px 14px;
+  background: var(--light-bg); color: var(--tulane-green);
+  font-size: 0.72rem; letter-spacing: 0.15em;
+  text-transform: uppercase; font-weight: 700;
+  border-radius: 20px; margin-bottom: 16px;
+}
+.slide-badge .leaf { color: var(--medallion); margin-right: 4px; }
+.content-slide h2 {
+  font-size: 2.4rem; color: var(--tulane-green);
+  margin-bottom: 14px; font-weight: 700; line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.content-slide h2 em { font-style: italic; color: var(--storm-shutters); font-weight: 600; }
+.content-slide .lead {
+  font-size: 1.15rem; color: var(--text-soft);
+  max-width: 900px; margin-bottom: 28px; line-height: 1.5;
+}
+.content-slide .lead em { color: var(--tulane-green); font-style: italic; }
+.slide-footer {
+  position: absolute; bottom: 24px;
+  left: 55px; right: 55px; padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  display: flex; justify-content: space-between;
+  font-size: 0.78rem; color: var(--text-soft);
+}
+.slide-footer strong { color: var(--tulane-green); font-weight: 600; }
+
+/* GUIDE LINK BANNER */
+.guide-link-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 22px;
+  background: linear-gradient(135deg, var(--tulane-green), var(--storm-shutters));
+  border-radius: 10px; color: var(--white);
+  text-decoration: none; margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.guide-link-banner:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.guide-link-banner .glb-left { display: flex; align-items: center; gap: 14px; }
+.guide-link-banner .glb-icon {
+  font-size: 1.5rem;
+  background: rgba(255,255,255,0.15);
+  padding: 8px 12px; border-radius: 6px;
+}
+.guide-link-banner .glb-label {
+  font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--medallion); font-weight: 700; margin-bottom: 2px;
+}
+.guide-link-banner .glb-url {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 1rem; font-weight: 600;
+}
+.guide-link-banner .glb-arrow {
+  font-size: 1.4rem; color: var(--tulane-blue-light);
+  transition: transform 0.2s ease;
+}
+.guide-link-banner:hover .glb-arrow { transform: translateX(4px); }
+
+/* TERRAIN (roadmap) */
+.terrain {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-top: 8px;
+}
+.terrain-card {
+  padding: 24px 22px; background: var(--light-bg);
+  border-top: 4px solid var(--tulane-green); border-radius: 8px;
+}
+.terrain-card .num {
+  font-size: 0.72rem; color: var(--medallion);
+  font-weight: 700; letter-spacing: 0.15em; margin-bottom: 8px;
+}
+.terrain-card h4 {
+  font-size: 1.15rem; color: var(--tulane-green);
+  margin-bottom: 10px; font-weight: 700;
+}
+.terrain-card h4 em { font-style: italic; color: var(--storm-shutters); }
+.terrain-card p { font-size: 0.92rem; color: var(--text-soft); line-height: 1.45; }
+
+/* ACTIVITY BADGE */
+.activity-badge {
+  display: inline-block; padding: 6px 14px;
+  background: var(--medallion); color: var(--white);
+  font-size: 0.72rem; letter-spacing: 0.14em;
+  text-transform: uppercase; font-weight: 700;
+  border-radius: 4px; margin-bottom: 14px;
+}
+
+/* PICK CARDS (Activity 1) */
+.picks {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-top: 16px;
+}
+.pick-card {
+  padding: 20px 18px 18px;
+  background: var(--light-bg);
+  border: 3px solid transparent; border-radius: 10px;
+  cursor: pointer; transition: all 0.25s ease;
+  text-align: left; font-family: inherit; position: relative;
+}
+.pick-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.pick-card.selected {
+  background: rgba(113, 197, 232, 0.15);
+  border-color: var(--tulane-green);
+}
+.pick-card.selected::after {
+  content: '✓'; position: absolute; top: 10px; right: 12px;
+  color: var(--tulane-green); font-weight: 700; font-size: 1.15rem;
+}
+.pick-card .icon { font-size: 1.75rem; margin-bottom: 8px; }
+.pick-card h5 {
+  font-size: 1rem; color: var(--tulane-green);
+  font-weight: 700; margin-bottom: 6px; line-height: 1.2;
+}
+.pick-card p { font-size: 0.82rem; color: var(--text-soft); line-height: 1.4; }
+
+/* TRAILHEADS */
+.trailheads {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin-top: 12px;
+}
+.trailhead {
+  padding: 22px 24px; background: var(--light-bg);
+  border-top: 4px solid var(--tulane-green); border-radius: 10px;
+  display: flex; flex-direction: column;
+}
+.trailhead.blue { border-top-color: var(--storm-shutters); }
+.trailhead.gold { border-top-color: var(--medallion); }
+.trailhead.olive { border-top-color: var(--olive-branch); }
+.trailhead .th-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.trailhead .th-icon { font-size: 1.6rem; }
+.trailhead .th-tag {
+  font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 700; color: var(--medallion);
+}
+.trailhead h3 {
+  font-size: 1.2rem; color: var(--tulane-green);
+  margin-bottom: 10px; font-weight: 700; line-height: 1.2;
+}
+.trailhead p {
+  font-size: 0.92rem; color: var(--text-soft);
+  line-height: 1.45; flex: 1; margin-bottom: 12px;
+}
+.trailhead .url {
+  padding-top: 10px; border-top: 1px solid var(--border-light);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.78rem; color: var(--tulane-green);
+  font-weight: 600; word-break: break-all;
+}
+
+/* THREE QUESTIONS */
+.three-q {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 18px; margin-top: 16px;
+}
+.q-card {
+  padding: 26px 24px; background: var(--light-bg);
+  border-left: 4px solid var(--tulane-green); border-radius: 8px;
+}
+.q-card .q-num {
+  font-size: 0.7rem; color: var(--medallion);
+  font-weight: 700; letter-spacing: 0.14em; margin-bottom: 8px;
+}
+.q-card h3 {
+  font-size: 1.25rem; color: var(--tulane-green);
+  margin-bottom: 14px; line-height: 1.2; font-weight: 700;
+}
+.q-card ul { list-style: none; padding: 0; }
+.q-card li {
+  padding: 6px 0 6px 20px; position: relative;
+  color: var(--text-dark); font-size: 0.92rem; line-height: 1.4;
+}
+.q-card li::before {
+  content: '▸'; position: absolute; left: 0;
+  color: var(--olive-branch); font-weight: 700;
+}
+
+/* COLLECTORS */
+.collectors {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-top: 16px;
+}
+.collector {
+  padding: 22px 24px; background: var(--light-bg);
+  border-left: 4px solid var(--tulane-green); border-radius: 8px;
+}
+.collector:nth-child(2) { border-left-color: var(--storm-shutters); }
+.collector:nth-child(3) { border-left-color: var(--medallion); }
+.collector:nth-child(4) { border-left-color: var(--olive-branch); }
+.collector h4 {
+  font-size: 1.15rem; color: var(--tulane-green);
+  margin-bottom: 8px; font-weight: 700;
+}
+.collector p {
+  font-size: 0.9rem; color: var(--text-soft);
+  line-height: 1.45; margin-bottom: 10px;
+}
+.collector .ex {
+  font-size: 0.82rem; color: var(--text-dark);
+  padding-top: 10px; border-top: 1px dashed var(--border-light); line-height: 1.5;
+}
+.collector .ex strong {
+  display: block; color: var(--tulane-green);
+  font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+
+/* WHY (research vs administrative) */
+.why-two {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; margin-top: 16px;
+}
+.why-panel {
+  padding: 30px 32px; background: var(--light-bg);
+  border-radius: 10px; display: flex; flex-direction: column;
+}
+.why-panel.green {
+  background: linear-gradient(135deg, rgba(40,92,77,0.08), rgba(0,119,139,0.05));
+  border: 1px solid rgba(40,92,77,0.15);
+}
+.why-panel .label {
+  font-size: 0.72rem; color: var(--medallion);
+  font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.why-panel.green .label { color: var(--tulane-green); }
+.why-panel h3 {
+  font-size: 1.5rem; color: var(--tulane-green);
+  margin-bottom: 10px; font-weight: 700;
+}
+.why-panel p {
+  font-size: 1rem; color: var(--text-soft);
+  line-height: 1.5; margin-bottom: 16px;
+}
+.why-panel .ex {
+  margin-top: auto; padding-top: 14px;
+  border-top: 1px solid var(--border-light);
+}
+.why-panel .ex strong {
+  display: block; font-size: 0.7rem;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--tulane-green); margin-bottom: 6px;
+}
+.why-panel .ex em {
+  display: block; font-style: normal;
+  font-size: 0.9rem; color: var(--text-dark); padding: 3px 0;
+}
+
+/* SERVICES */
+.services {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-top: 16px;
+}
+.service {
+  padding: 22px 24px; background: var(--light-bg);
+  border-top: 3px solid var(--tulane-green); border-radius: 8px;
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: all 0.2s ease;
+}
+a.service:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-top-color: var(--storm-shutters);
+}
+a.service:hover .cta { color: var(--tulane-green); }
+.service .service-glyph { font-size: 1.5rem; margin-bottom: 8px; }
+.service h4 { font-size: 1.15rem; color: var(--tulane-green); margin-bottom: 8px; font-weight: 700; }
+.service p { font-size: 0.92rem; color: var(--text-soft); line-height: 1.45; flex: 1; }
+.service .cta {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px dashed var(--border-light);
+  font-size: 0.78rem; color: var(--storm-shutters);
+  text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
+}
+
+/* PATHWAYS */
+.pathways {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-top: 16px;
+}
+.pathway {
+  padding: 16px 18px; background: var(--light-bg);
+  border-left: 3px solid var(--tulane-green); border-radius: 6px;
+}
+.pathway h5 {
+  font-size: 1rem; color: var(--tulane-green);
+  margin-bottom: 6px; font-weight: 700;
+}
+.pathway p { font-size: 0.82rem; color: var(--text-soft); line-height: 1.4; }
+.pathway.wide {
+  grid-column: span 4;
+  background: linear-gradient(135deg, rgba(40,92,77,0.08), rgba(0,119,139,0.05));
+  border-left-color: var(--storm-shutters);
+}
+
+/* REPOSITORIES */
+.repo-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px; margin-top: 16px;
+}
+.repo-col { background: var(--light-bg); padding: 20px 22px; border-radius: 8px; }
+.repo-col .repo-col-head {
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-light);
+}
+.repo-col h5 {
+  font-size: 0.72rem; color: var(--medallion);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+}
+.repo-col .repo-col-desc {
+  font-size: 0.82rem; color: var(--text-soft);
+  line-height: 1.4; font-style: italic;
+}
+.repo-col ul { list-style: none; padding: 0; }
+.repo-col li {
+  padding: 8px 0; border-bottom: 1px dotted var(--border-light);
+  font-size: 0.85rem; color: var(--text-soft); line-height: 1.4;
+}
+.repo-col li:last-child { border-bottom: none; }
+.repo-col li strong {
+  display: block; font-size: 0.92rem;
+  color: var(--tulane-green); font-weight: 700; margin-bottom: 2px;
+}
+
+/* EXAMPLE DATASETS (Activity 2) */
+.example-datasets {
+  margin-top: 8px; margin-bottom: 20px;
+}
+.ed-title {
+  font-size: 0.75rem; color: var(--medallion);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 700; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ed-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ed-card {
+  padding: 14px 16px;
+  background: var(--light-bg);
+  border-left: 3px solid var(--olive-branch);
+  border-radius: 6px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+  transition: all 0.2s ease;
+}
+.ed-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-left-color: var(--tulane-green);
+}
+.ed-card:nth-child(2) { border-left-color: var(--storm-shutters); }
+.ed-card:nth-child(3) { border-left-color: var(--medallion); }
+.ed-card .ed-tag {
+  font-size: 0.62rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--olive-branch);
+  font-weight: 700; margin-bottom: 4px;
+}
+.ed-card:nth-child(2) .ed-tag { color: var(--storm-shutters); }
+.ed-card:nth-child(3) .ed-tag { color: var(--medallion); }
+.ed-card .ed-name {
+  font-size: 0.98rem; font-weight: 700;
+  color: var(--tulane-green); margin-bottom: 4px; line-height: 1.2;
+}
+.ed-card .ed-desc {
+  font-size: 0.78rem; color: var(--text-soft);
+  line-height: 1.35; flex: 1;
+}
+.ed-card .ed-url {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.68rem; color: var(--tulane-green);
+  margin-top: 6px; font-weight: 600; word-break: break-all;
+}
+
+/* CHECKLIST */
+.checklist {
+  background: var(--light-bg);
+  padding: 20px 28px; border-radius: 12px;
+}
+.check-row {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.check-row:last-child { border-bottom: none; }
+.check-row:hover .box { border-color: var(--storm-shutters); }
+.check-row .box {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border: 2px solid var(--tulane-green);
+  background: var(--white); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px; transition: all 0.2s ease;
+}
+.check-row.checked .box { background: var(--tulane-green); }
+.check-row.checked .box::after {
+  content: '✓'; color: var(--white); font-weight: 700; font-size: 1rem;
+}
+.check-row .q {
+  font-size: 1rem; color: var(--text-dark);
+  line-height: 1.4; padding-top: 2px;
+}
+.check-row .q em { font-style: italic; color: var(--tulane-green); font-weight: 600; }
+.check-row.checked .q { color: var(--text-soft); }
+
+/* CRACKS */
+.cracks {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px; margin-top: 16px;
+}
+.crack {
+  padding: 24px 24px; background: var(--light-bg);
+  border-top: 3px dashed var(--medallion); border-radius: 8px;
+}
+.crack .crack-icon { font-size: 1.75rem; margin-bottom: 10px; }
+.crack h4 {
+  font-size: 1.15rem; color: var(--tulane-green);
+  margin-bottom: 10px; font-weight: 700;
+}
+.crack p { font-size: 0.92rem; color: var(--text-soft); line-height: 1.5; }
+
+/* PLAN + FORAGING MAP */
+.plan-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; margin-top: 16px;
+}
+.plan-col h4 {
+  font-size: 0.75rem; color: var(--medallion);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 700; margin-bottom: 12px;
+}
+.activity-textarea {
+  width: 100%; padding: 14px 16px;
+  background: var(--white);
+  border: 2px solid var(--border-light);
+  border-left: 4px solid var(--tulane-green);
+  border-radius: 6px; font-family: inherit;
+  font-size: 0.95rem; line-height: 1.5;
+  color: var(--text-dark);
+  resize: none; margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+.activity-textarea:focus {
+  outline: none;
+  border-left-color: var(--medallion);
+  background: rgba(113, 197, 232, 0.04);
+  box-shadow: 0 0 0 3px rgba(113, 197, 232, 0.15);
+}
+.activity-textarea::placeholder {
+  color: var(--text-soft); font-style: italic; opacity: 0.75;
+}
+.foraging-map {
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(40,92,77,0.06), rgba(113,197,232,0.05));
+  border: 2px solid rgba(40,92,77,0.12);
+  border-radius: 10px; max-height: 460px; overflow-y: auto;
+}
+.foraging-map .fm-title {
+  font-size: 1.1rem; color: var(--tulane-green);
+  font-weight: 700; margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(40,92,77,0.15);
+  display: flex; align-items: center; gap: 8px;
+}
+.foraging-map .fm-empty {
+  padding: 32px 20px; text-align: center;
+  color: var(--text-soft); font-style: italic;
+  font-size: 0.95rem; line-height: 1.5;
+}
+.fm-item { padding: 12px 0; border-bottom: 1px dotted rgba(40,92,77,0.15); }
+.fm-item:last-child { border-bottom: none; }
+.fm-item h5 { font-size: 1rem; color: var(--tulane-green); font-weight: 700; margin-bottom: 4px; }
+.fm-item p { font-size: 0.86rem; color: var(--text-dark); line-height: 1.5; margin-bottom: 4px; }
+.fm-item .fm-src {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.75rem; color: var(--storm-shutters); font-weight: 600;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid; grid-template-columns: 1.2fr 1fr;
+  gap: 32px; margin-top: 16px; align-items: center;
+}
+.contact-left h3 {
+  font-size: 1.6rem; color: var(--tulane-green);
+  margin-bottom: 14px; font-weight: 700; line-height: 1.2;
+}
+.contact-left h3 em { font-style: italic; color: var(--storm-shutters); }
+.contact-left p {
+  font-size: 1rem; color: var(--text-soft);
+  line-height: 1.55; margin-bottom: 12px; max-width: 44ch;
+}
+.contact-left em { color: var(--tulane-green); font-style: italic; font-weight: 600; }
+.contact-card {
+  background: linear-gradient(135deg, var(--tulane-green), var(--storm-shutters));
+  padding: 30px 28px; border-radius: 12px;
+  color: var(--white); box-shadow: var(--shadow-lg);
+}
+.contact-card .name { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.contact-card .role {
+  font-size: 0.9rem; color: var(--tulane-blue-light);
+  margin-bottom: 20px; font-weight: 500;
+}
+.contact-card .line {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  font-size: 0.9rem; align-items: baseline;
+}
+.contact-card .line .k {
+  font-size: 0.7rem; color: var(--medallion);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  min-width: 60px; font-weight: 700;
+}
+.contact-card .line .v { color: var(--white); }
+.contact-card .line .v a {
+  color: var(--white);
+  text-decoration: underline;
+  text-decoration-color: rgba(255,255,255,0.4);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+.contact-card .line .v a:hover { text-decoration-color: var(--medallion); }
+
+/* RELATED */
+.related-list {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px 32px; margin-top: 16px;
+}
+.related-item {
+  padding: 12px 0; border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.related-item .dot {
+  width: 8px; height: 8px; background: var(--medallion);
+  border-radius: 50%; flex-shrink: 0; transform: translateY(-1px);
+}
+.related-item .info h5 {
+  font-size: 1rem; color: var(--tulane-green);
+  font-weight: 700; margin-bottom: 2px;
+}
+.related-item .info span {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.75rem; color: var(--text-soft); word-break: break-all;
+}
+
+/* SOURCES & PURPOSES (compact merged slide) */
+.sp-section-label {
+  font-size: 0.72rem;
+  color: var(--tulane-green);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 18px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--medallion);
+  width: fit-content;
+}
+.sp-slide .collectors { gap: 10px; margin-top: 8px; }
+.sp-slide .collector { padding: 14px 16px; }
+.sp-slide .collector h4 { font-size: 1rem; margin-bottom: 4px; }
+.sp-slide .collector p { font-size: 0.85rem; margin-bottom: 6px; line-height: 1.35; }
+.sp-slide .collector .ex { padding-top: 6px; font-size: 0.78rem; }
+.sp-slide .collector .ex strong {
+  display: inline; color: var(--tulane-green); font-size: 0.7rem;
+  letter-spacing: 0.08em; margin-right: 4px;
+}
+.sp-slide .why-two { gap: 12px; margin-top: 8px; }
+.sp-slide .why-panel { padding: 14px 18px; }
+.sp-slide .why-panel .label {
+  font-size: 0.78rem; margin-bottom: 4px;
+  color: var(--tulane-green);
+}
+.sp-slide .why-panel.green .label { color: var(--storm-shutters); }
+.sp-slide .why-panel p { font-size: 0.88rem; margin-bottom: 8px; line-height: 1.4; }
+.sp-slide .why-panel .ex { padding-top: 8px; }
+.sp-slide .why-panel .ex strong {
+  display: inline; color: var(--tulane-green);
+  font-size: 0.7rem; letter-spacing: 0.08em; margin-right: 4px;
+}
+
+/* CRACKS CALLOUT (folded into Trailheads slide) */
+.cracks-callout {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 18px;
+  background: rgba(204,153,0,0.07);
+  border-left: 3px solid var(--medallion);
+  border-radius: 6px;
+  margin-top: 18px;
+}
+.cc-icon { font-size: 1.1rem; flex-shrink: 0; padding-top: 1px; }
+.cc-text { font-size: 0.87rem; line-height: 1.45; color: var(--text-soft); }
+.cc-text strong { color: var(--tulane-green); font-weight: 700; }
+
+/* PICKS-SO-FAR indicator (Activity 2) */
+.picks-so-far {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(113,197,232,0.12), rgba(40,92,77,0.04));
+  border-left: 3px solid var(--tulane-blue);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.picks-so-far.empty {
+  border-left-color: var(--medallion);
+  background: linear-gradient(135deg, rgba(204,153,0,0.08), rgba(101,141,27,0.03));
+}
+.ps-inner {
+  display: flex; align-items: center; gap: 12px;
+  flex: 1; flex-wrap: wrap; min-width: 0;
+}
+.ps-label {
+  font-size: 0.68rem;
+  color: var(--tulane-green);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.picks-so-far.empty .ps-label { color: var(--olive-branch); }
+.picks-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.picks-chip {
+  padding: 4px 10px;
+  background: var(--white);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--tulane-green);
+  font-weight: 600;
+  border: 1px solid rgba(40,92,77,0.15);
+}
+.ps-hint {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-soft);
+  flex-shrink: 0;
+}
+.picks-so-far.empty .ps-hint {
+  color: var(--olive-branch);
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* EXAMPLES STRIP (Activity 2) */
+.examples-strip {
+  margin-top: 20px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(204,153,0,0.06), rgba(101,141,27,0.04));
+  border-radius: 10px;
+  border: 1px dashed rgba(204,153,0,0.4);
+}
+.examples-label {
+  font-size: 0.75rem;
+  color: var(--tulane-green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.examples-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.example-card {
+  padding: 14px 16px;
+  background: var(--white);
+  border-radius: 8px;
+  border-left: 3px solid var(--medallion);
+  text-decoration: none;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+  display: block;
+}
+.example-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-left-color: var(--tulane-green);
+}
+.example-card .ex-tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--olive-branch);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.example-card .ex-title {
+  font-size: 0.95rem;
+  color: var(--tulane-green);
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.example-card .ex-blurb {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+.example-card .ex-src {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.72rem;
+  color: var(--storm-shutters);
+  font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .nav-container { flex-direction: column; gap: 8px; }
+  .nav-controls { flex-wrap: wrap; justify-content: center; }
+  .page-selector { min-width: 200px; }
+  .presentation { margin-top: 130px; padding: 12px; }
+  .content-slide, .title-slide { padding: 30px 24px; min-height: auto; }
+  .title-slide h1 { font-size: 2.25rem; }
+  .content-slide h2 { font-size: 1.75rem; }
+  .terrain, .picks, .trailheads, .three-q, .collectors, .why-two,
+  .services, .pathways, .repo-grid, .cracks, .plan-grid,
+  .contact-grid, .related-list, .ed-cards, .examples-cards { grid-template-columns: 1fr; }
+  .pathway.wide { grid-column: span 1; }
+  .slide-footer { position: static; margin-top: 24px; }
+  .guide-link-banner { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav-container">
+  <div class="nav-title">
+    <span class="compass">📊</span>
+    Finding Data · Tulane University Libraries
+  </div>
+  <div class="nav-controls">
+    <select class="page-selector" id="page-selector">
+      <option value="0">1. Title</option>
+      <option value="1">2. Overview</option>
+      <option value="2">3. Before You Search</option>
+      <option value="3">4. Sources &amp; Purposes</option>
+      <option value="4">5. Pathways to Data</option>
+      <option value="5">6. Social Sciences Pathways</option>
+      <option value="6">7. Scientific Repositories</option>
+      <option value="7">8. Data Databases</option>
+      <option value="8">9. Datasets Filter</option>
+      <option value="9">10. Activity 1 · Identify Your Data</option>
+      <option value="10">11. Activity 2 · Evaluate a Dataset</option>
+      <option value="11">12. Activity 3 · Your Data Plan</option>
+      <option value="12">13. Data Services @ TUL</option>
+      <option value="13">14. Getting Help</option>
+      <option value="14">15. Related Guides</option>
+    </select>
+    <button class="nav-btn" id="prev-btn" onclick="prevSlide()">◀ Previous</button>
+    <span class="page-indicator" id="page-indicator">1 / 15</span>
+    <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next ▶</button>
+  </div>
+</nav>
+
+<div class="presentation" id="presentation">
+
+  <!-- SLIDE 1 · TITLE -->
+  <div class="slide active" id="slide-1">
+    <div class="title-slide">
+      <div class="kicker">— Tulane University Libraries Workshop —</div>
+      <h1>Finding <em>data</em> at Tulane.</h1>
+      <p class="subtitle">A working guide to the data landscape at Tulane — how to find, evaluate, and use the datasets your research actually needs.</p>
+      <div class="presenter-block">
+        <div class="presenter-name">Kay P.</div>
+        <div class="presenter-role">Scholarly Engagement Librarian · Resource &amp; Data Analyst</div>
+        <div class="institution">Howard-Tilton Memorial Library</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 · MAPPING -->
+  <div class="slide" id="slide-2">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">📋</span> Overview</div>
+      <h2>What we'll <em>cover</em> today.</h2>
+      <p class="lead">Data lives all over — in government offices, international agencies, subscription archives, business filings, scientific repositories. Today we'll walk through that landscape and give you the tools to find what you need.</p>
+      <div class="terrain">
+        <div class="terrain-card">
+          <div class="num">01 · SOURCES</div>
+          <h4>What data <em>is</em></h4>
+          <p>The kinds of data available at Tulane and beyond.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">02 · FRAMING</div>
+          <h4>Ask before you search</h4>
+          <p>Who, what, and why — the questions that define a real search.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">03 · PATHWAYS</div>
+          <h4>Guides &amp; repositories</h4>
+          <p>Guides, databases, filters, and repositories to find data.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">04 · EVALUATING</div>
+          <h4>Is this data trustworthy?</h4>
+          <p>Evaluating whether a dataset is trustworthy.</p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>Slide 2 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 · BEFORE YOU FORAGE -->
+  <div class="slide" id="slide-3">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">🎯</span> Before you search</div>
+      <h2>Three questions to ask <em>before</em> you search.</h2>
+      <p class="lead">Skip these and you'll end up hip-deep in irrelevant datasets. If you can't answer them yet, start with a literature review — see what data other scholars in your area used, and where they got it.</p>
+      <div class="three-q">
+        <div class="q-card">
+          <div class="q-num">Question 01</div>
+          <h3>Who would have collected this?</h3>
+          <ul>
+            <li>Governments &amp; agencies</li>
+            <li>International organizations</li>
+            <li>Data archives &amp; scholars</li>
+            <li>Businesses &amp; trade groups</li>
+          </ul>
+        </div>
+        <div class="q-card">
+          <div class="q-num">Question 02</div>
+          <h3>What kind of data do you need?</h3>
+          <ul>
+            <li>Topic / variables</li>
+            <li>Unit of analysis</li>
+            <li>Geographic unit</li>
+            <li>Time frame</li>
+          </ul>
+        </div>
+        <div class="q-card">
+          <div class="q-num">Question 03</div>
+          <h3>Why was it collected?</h3>
+          <ul>
+            <li>Research — deliberate study</li>
+            <li>Administrative — byproduct</li>
+            <li>Purpose shapes format &amp; access</li>
+          </ul>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>Slide 3 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 · SOURCES & PURPOSES (merged from Who + Why) -->
+  <div class="slide" id="slide-4">
+    <div class="content-slide sp-slide">
+      <div class="slide-badge"><span class="leaf">📚</span> Sources &amp; purposes</div>
+      <h2>Where data comes from — <em>and why.</em></h2>
+      <p class="lead">Two dimensions shape what a dataset looks like and how you'll access it: <em>who publishes it</em>, and <em>why it was collected</em>.</p>
+
+      <div class="sp-section-label">Who publishes the data</div>
+      <div class="collectors">
+        <div class="collector">
+          <h4>🏛️ Government</h4>
+          <p>Usually free; policy-driven or administrative.</p>
+          <div class="ex"><strong>Ex.</strong>Census · BLS · CDC · LDEQ · data.un.org</div>
+        </div>
+        <div class="collector">
+          <h4>🌐 International orgs</h4>
+          <p>Free or subscription; cross-national policy focus.</p>
+          <div class="ex"><strong>Ex.</strong>UN · WHO · OECD · World Bank · MSF</div>
+        </div>
+        <div class="collector">
+          <h4>📦 Data archives</h4>
+          <p>Subscription; aggregates scholar-collected work.</p>
+          <div class="ex"><strong>Ex.</strong>ICPSR · Roper Center</div>
+        </div>
+        <div class="collector">
+          <h4>💼 Business &amp; trade</h4>
+          <p>Proprietary; requires institutional subscription.</p>
+          <div class="ex"><strong>Ex.</strong>Market research · industry stats · financials</div>
+        </div>
+      </div>
+
+      <div class="sp-section-label">Why it was collected</div>
+      <div class="why-two">
+        <div class="why-panel green">
+          <div class="label">Mode A · Research</div>
+          <p>Collected deliberately to answer a research question or inform policy. Structured for analysis from the start.</p>
+          <div class="ex"><strong>Ex.</strong>American Time Use Survey · General Social Survey</div>
+        </div>
+        <div class="why-panel">
+          <div class="label">Mode B · Administrative</div>
+          <p>Byproduct of an organization operating — transactions, applications, filings, receipts.</p>
+          <div class="ex"><strong>Ex.</strong>SNAP recipients by parish · LA gaming revenue</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>Slide 4 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 · TRAILHEADS (was slide-5) -->
+  <div class="slide" id="slide-5">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">🗺️</span> Pathways to find data</div>
+      <h2>Four <em>pathways</em> to data at Tulane.</h2>
+      <p class="lead">Two subject guides, subscription data databases, and the library's own discovery layer. Each surfaces a different slice of the landscape — start with the pathway closest to your question.</p>
+      <div class="trailheads">
+        <div class="trailhead blue">
+          <div class="th-head">
+            <div class="th-icon">📊</div>
+            <div class="th-tag">Library guide · 01</div>
+          </div>
+          <h3>Statistics &amp; Data for the Social Sciences</h3>
+          <p>Curated pathways into government, census, state &amp; local, international, business, GIS, and topical datasets.</p>
+          <div class="url">libguides.tulane.edu/socialsciencedata</div>
+        </div>
+        <div class="trailhead gold">
+          <div class="th-head">
+            <div class="th-icon">🧪</div>
+            <div class="th-tag">Library guide · 02</div>
+          </div>
+          <h3>Scientific Data</h3>
+          <p>Repositories by discipline — biology, chemistry, physics, earth &amp; space — plus general-purpose scientific platforms.</p>
+          <div class="url">libguides.tulane.edu/scidata</div>
+        </div>
+        <div class="trailhead">
+          <div class="th-head">
+            <div class="th-icon">📦</div>
+            <div class="th-tag">Data databases · 03</div>
+          </div>
+          <h3>Tulane-licensed data databases</h3>
+          <p>Subscription resources for accessing datasets directly — ICPSR, Data-Planet, Statista, Statistical Insight, and more. Browse via the library's A–Z databases list.</p>
+          <div class="url">libraries.tulane.edu/databases</div>
+        </div>
+        <div class="trailhead olive">
+          <div class="th-head">
+            <div class="th-icon">🔎</div>
+            <div class="th-tag">Discovery layer · 04</div>
+          </div>
+          <h3>Datasets filter in Library Search</h3>
+          <p>Apply the <strong>Datasets</strong> filter in the main Library Search to surface datasets alongside books and articles — a quick sweep before digging deeper.</p>
+          <div class="url">search.library.tulane.edu</div>
+        </div>
+      </div>
+      <div class="cracks-callout">
+        <span class="cc-icon">⚠️</span>
+        <div class="cc-text"><strong>Watch out for:</strong> Link rot, gated data, and discontinued series. Try the Wayback Machine, check for a Tulane subscription, or ask a librarian when you hit a dead end.</div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>Slide 5 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 · SOCIAL SCIENCES -->
+  <div class="slide" id="slide-6">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">📊</span> Guide 01 · Social Sciences</div>
+      <h2>Pathways through the <em>social science</em> landscape.</h2>
+      <a class="guide-link-banner" href="https://libguides.tulane.edu/socialsciencedata" target="_blank" rel="noopener">
+        <div class="glb-left">
+          <div class="glb-icon">📊</div>
+          <div>
+            <div class="glb-label">Full guide</div>
+            <div class="glb-url">libguides.tulane.edu/socialsciencedata</div>
+          </div>
+        </div>
+        <div class="glb-arrow">→</div>
+      </a>
+      <p class="lead">The guide is organized by <em>who publishes the data</em>, plus a large cross-cutting section for topical searches. If you know the source, you know the page — if you know the topic, use the last row.</p>
+      <div class="pathways">
+        <div class="pathway"><h5>US Federal</h5><p>Executive-branch agencies: BLS, BEA, ERS/USDA, CDC, and more.</p></div>
+        <div class="pathway"><h5>US Census</h5><p>Bureau data plus a walkthrough of Social Explorer for mapping variables.</p></div>
+        <div class="pathway"><h5>State &amp; Local</h5><p>Louisiana state agencies plus New Orleans / parish-level sources.</p></div>
+        <div class="pathway"><h5>International</h5><p>Global sources plus a dedicated Latin America section.</p></div>
+        <div class="pathway"><h5>Popular archives</h5><p>ICPSR, Roper Center, and other independent aggregators.</p></div>
+        <div class="pathway"><h5>Business data</h5><p>Firm-level, industry, and market data for economics &amp; policy.</p></div>
+        <div class="pathway"><h5>GIS data</h5><p>Geospatial layers &amp; mapping-ready boundary files.</p></div>
+        <div class="pathway"><h5>In the catalog</h5><p>Datasets, statistical compendia, and printed sources via Library Search.</p></div>
+        <div class="pathway wide">
+          <h5>Cross-cutting: Data by topic</h5>
+          <p>Sometimes you know the topic before you know the publisher. This section groups sources across publishers: economics, environment, historical, national security, political data, polls &amp; surveys, public health, and text data.</p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>TEMP__Slide 6 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 · SCIENTIFIC -->
+  <div class="slide" id="slide-7">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">🧪</span> Guide 02 · Scientific Data</div>
+      <h2>Scientific repositories, by <em>discipline.</em></h2>
+      <a class="guide-link-banner" href="https://libguides.tulane.edu/scidata" target="_blank" rel="noopener">
+        <div class="glb-left">
+          <div class="glb-icon">🧪</div>
+          <div>
+            <div class="glb-label">Full guide</div>
+            <div class="glb-url">libguides.tulane.edu/scidata</div>
+          </div>
+        </div>
+        <div class="glb-arrow">→</div>
+      </a>
+      <p class="lead">The scientific data landscape is dense — hundreds of discipline-specific repositories, each with its own metadata standards. The guide groups them into three practical tiers: <em>where to search</em>, <em>where life &amp; chemistry data lives</em>, and <em>where physics &amp; earth data lives</em>.</p>
+      <div class="repo-grid">
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Search catalogs &amp; general</h5>
+            <div class="repo-col-desc">When you don't yet know which repository holds what you need.</div>
+          </div>
+          <ul>
+            <li><strong>re3data</strong>Registry of research data repositories</li>
+            <li><strong>Nature guidance</strong>Repository selection policy</li>
+            <li><strong>figshare</strong>Citable general-purpose repository</li>
+            <li><strong>Dryad</strong>Open data publishing platform</li>
+            <li><strong>Data.gov</strong>US government open data</li>
+          </ul>
+        </div>
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Biological &amp; chemistry</h5>
+            <div class="repo-col-desc">Structural, genomic, biodiversity, and chemical data.</div>
+          </div>
+          <ul>
+            <li><strong>Genome Sequence Archive</strong>Raw genomic sequences</li>
+            <li><strong>Protein Data Bank</strong>3D structures since 1971</li>
+            <li><strong>OpenNeuro</strong>Neurology data (Stanford/NSF/NIH)</li>
+            <li><strong>GBIF</strong>Global Biodiversity Information Facility</li>
+            <li><strong>ArrayExpress</strong>Functional genomics</li>
+            <li><strong>PubChem</strong>Chemical information</li>
+          </ul>
+        </div>
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Physics &amp; earth science</h5>
+            <div class="repo-col-desc">High-energy physics, crystallography, environmental &amp; NASA archives.</div>
+          </div>
+          <ul>
+            <li><strong>HEPData</strong>High-energy physics results</li>
+            <li><strong>Crystallography Open DB</strong>Crystal structures</li>
+            <li><strong>EDI Data Portal</strong>Environmental &amp; ecological</li>
+            <li><strong>ORNL DAAC</strong>NASA biogeochemistry</li>
+            <li><strong>NASA GES DISC</strong>Earth science data</li>
+            <li><strong>NCEI · NOAA</strong>Geophysical data</li>
+            <li><strong>Earthdata</strong>NASA ESDS program</li>
+          </ul>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>libguides.tulane.edu/scidata</strong></span>
+        <span>TEMP__TEMP__Slide 7 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 · DATA DATABASES (new) -->
+  <div class="slide" id="slide-8">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">📦</span> Pathway 03 · Data Databases</div>
+      <h2>Subscription data databases at <em>Tulane.</em></h2>
+      <a class="guide-link-banner" href="https://libraries.tulane.edu/databases" target="_blank" rel="noopener">
+        <div class="glb-left">
+          <div class="glb-icon">📦</div>
+          <div>
+            <div class="glb-label">A–Z databases list</div>
+            <div class="glb-url">libraries.tulane.edu/databases</div>
+          </div>
+        </div>
+        <div class="glb-arrow">→</div>
+      </a>
+      <p class="lead">Tulane pays for direct access to specialized data databases you can't get through a general web search. Most require Tulane SSO from off campus — filter the A–Z list by <em>Subject → Data / Statistics</em> to see what's available.</p>
+      <div class="repo-grid">
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Social science archives</h5>
+            <div class="repo-col-desc">Curated datasets from researchers &amp; pollsters.</div>
+          </div>
+          <ul>
+            <li><strong>ICPSR</strong>The largest social science data archive — 15,000+ studies with strong metadata.</li>
+            <li><strong>Roper Center</strong>Public opinion polls, historical to present.</li>
+          </ul>
+        </div>
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Business &amp; industry</h5>
+            <div class="repo-col-desc">Firm-level, market, and industry data.</div>
+          </div>
+          <ul>
+            <li><strong>Statista</strong>Market and consumer data across sectors.</li>
+            <li><strong>IBISWorld</strong>Industry research reports with data tables.</li>
+          </ul>
+        </div>
+        <div class="repo-col">
+          <div class="repo-col-head">
+            <h5>Statistics &amp; aggregators</h5>
+            <div class="repo-col-desc">Cross-source statistical portals.</div>
+          </div>
+          <ul>
+            <li><strong>Sage Data</strong>Statistical datasets across topics (formerly Data-Planet).</li>
+            <li><strong>ProQuest Statistical Insight</strong>US &amp; international statistics with source citations.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>libraries.tulane.edu/databases</strong></span>
+        <span>TEMP__TEMP__TEMP__Slide 8 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 · DATASETS FILTER (new) -->
+  <div class="slide" id="slide-9">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">🔎</span> Pathway 04 · Library Search</div>
+      <h2>The <em>Datasets</em> filter in Library Search.</h2>
+      <a class="guide-link-banner" href="https://search.library.tulane.edu" target="_blank" rel="noopener">
+        <div class="glb-left">
+          <div class="glb-icon">🔎</div>
+          <div>
+            <div class="glb-label">Library Search</div>
+            <div class="glb-url">search.library.tulane.edu</div>
+          </div>
+        </div>
+        <div class="glb-arrow">→</div>
+      </a>
+      <p class="lead">Library Search covers books, articles, media — <em>and datasets</em>. Apply the Datasets filter to surface data records alongside everything else. Good for a quick first sweep before diving into a subject-specific archive.</p>
+      <div class="terrain">
+        <div class="terrain-card">
+          <div class="num">STEP 01</div>
+          <h4>Open Library Search</h4>
+          <p>Start at <em>search.library.tulane.edu</em> — the main library discovery layer.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">STEP 02</div>
+          <h4>Search your topic</h4>
+          <p>Enter keywords like a normal catalog search — subject, region, time period.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">STEP 03</div>
+          <h4>Apply the filter</h4>
+          <p>In "Refine my results," expand <em>Resource Type</em> and select <em>Datasets</em>.</p>
+        </div>
+        <div class="terrain-card">
+          <div class="num">STEP 04</div>
+          <h4>Follow the links</h4>
+          <p>Each result links out to its source — ICPSR, Sage Data, agency portals, and more.</p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>search.library.tulane.edu</strong></span>
+        <span>TEMP__TEMP__TEMP__TEMP__Slide 9 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 · ACTIVITY 1 (moved from slide 3) -->
+  <div class="slide" id="slide-10">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">✏️</span> Activity · Interactive</div>
+      <span class="activity-badge">Activity 1</span>
+      <h2>What kind of data are <em>you</em> looking for?</h2>
+      <p class="lead">Tap the cards that match the data you're after. Your picks build a personalized <em>Data Source Map</em> that will be waiting on the research-plan slide.</p>
+      <div class="picks" id="picks">
+        <button class="pick-card" data-pick="social">
+          <div class="icon">👥</div>
+          <h5>Social &amp; demographic</h5>
+          <p>Census, surveys, polls, people-level data.</p>
+        </button>
+        <button class="pick-card" data-pick="gov">
+          <div class="icon">🏛️</div>
+          <h5>Government &amp; policy</h5>
+          <p>Federal, state, local, international agency data.</p>
+        </button>
+        <button class="pick-card" data-pick="sci">
+          <div class="icon">🧬</div>
+          <h5>Scientific &amp; research</h5>
+          <p>Biology, chemistry, physics, earth &amp; space repositories.</p>
+        </button>
+        <button class="pick-card" data-pick="econ">
+          <div class="icon">💹</div>
+          <h5>Economic &amp; business</h5>
+          <p>Firm-level, market, industry, financial data.</p>
+        </button>
+        <button class="pick-card" data-pick="geo">
+          <div class="icon">🗺️</div>
+          <h5>Geospatial / GIS</h5>
+          <p>Maps, boundaries, satellite &amp; environmental layers.</p>
+        </button>
+        <button class="pick-card" data-pick="hist">
+          <div class="icon">📜</div>
+          <h5>Historical</h5>
+          <p>Time-series data reaching further back than the present decade.</p>
+        </button>
+        <button class="pick-card" data-pick="health">
+          <div class="icon">⚕️</div>
+          <h5>Health &amp; public health</h5>
+          <p>Epidemiological, clinical, health-system data.</p>
+        </button>
+        <button class="pick-card" data-pick="text">
+          <div class="icon">📚</div>
+          <h5>Text as data</h5>
+          <p>Corpora, newspapers, transcripts, born-digital text.</p>
+        </button>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>TEMP__TEMP__TEMP__TEMP__TEMP__Slide 10 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 · ACTIVITY 2 (with example datasets) -->
+  <div class="slide" id="slide-11">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">🔍</span> Activity · Interactive</div>
+      <span class="activity-badge">Activity 2</span>
+      <h2>Is this data <em>trustworthy?</em></h2>
+      <p class="lead">Test a dataset against the six questions below. Tap each box you can answer <em>yes</em>. The more you can check, the more trustworthy the dataset.</p>
+
+      <div class="picks-so-far empty" id="picks-so-far">
+        <div class="ps-inner">
+          <div class="ps-label">Your picks from Activity 1</div>
+          <div class="picks-chips"></div>
+        </div>
+        <div class="ps-hint">Haven't picked yet — go back to Activity 1 first.</div>
+      </div>
+
+      <div class="example-datasets">
+        <div class="ed-title">📌 Don't have one in mind? Try one of these:</div>
+        <div class="ed-cards">
+          <a class="ed-card" href="https://gss.norc.org/" target="_blank" rel="noopener">
+            <div class="ed-tag">Survey · Gold standard</div>
+            <div class="ed-name">General Social Survey</div>
+            <div class="ed-desc">NORC's long-running US survey. Deeply documented — a good baseline for what "all boxes checked" looks like.</div>
+            <div class="ed-url">gss.norc.org</div>
+          </a>
+          <a class="ed-card" href="https://data.nola.gov/" target="_blank" rel="noopener">
+            <div class="ed-tag">Local · Administrative</div>
+            <div class="ed-name">NOLA Open Data</div>
+            <div class="ed-desc">City of New Orleans administrative data — permits, 311 calls, budgets. Test the metadata &amp; methods questions.</div>
+            <div class="ed-url">data.nola.gov</div>
+          </a>
+          <a class="ed-card" href="https://www.kaggle.com/datasets" target="_blank" rel="noopener">
+            <div class="ed-tag">Community · Variable</div>
+            <div class="ed-name">Any Kaggle dataset</div>
+            <div class="ed-desc">Community-contributed data varies wildly in documentation. Great practice for identifying gaps.</div>
+            <div class="ed-url">kaggle.com/datasets</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="checklist" id="checklist">
+        <div class="check-row" data-check="license">
+          <div class="box"></div>
+          <div class="q">Does the data have a <em>use license</em>?</div>
+        </div>
+        <div class="check-row" data-check="methods">
+          <div class="box"></div>
+          <div class="q">Is there information describing the <em>collection and analysis strategies</em>?</div>
+        </div>
+        <div class="check-row" data-check="metadata">
+          <div class="box"></div>
+          <div class="q">Is there information describing the <em>structure and meaning</em> of the data — metadata?</div>
+        </div>
+        <div class="check-row" data-check="authors">
+          <div class="box"></div>
+          <div class="q">Are the <em>data authors and creators</em> identifiable by name and contact?</div>
+        </div>
+        <div class="check-row" data-check="protocols">
+          <div class="box"></div>
+          <div class="q">If the data is sensitive, are <em>proper protocols</em> in place — use agreements, restricted access?</div>
+        </div>
+        <div class="check-row" data-check="interest">
+          <div class="box"></div>
+          <div class="q">Is collection tied to a <em>financial, political, or social interest</em>? What safeguards are named?</div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Tulane University Libraries</span>
+        <span>TEMP__TEMP__TEMP__TEMP__TEMP__TEMP__Slide 11 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13 · ACTIVITY 3 -->
+  <div class="slide" id="slide-12">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">📝</span> Activity · Interactive</div>
+      <span class="activity-badge">Activity 3</span>
+      <h2>Sketch your <em>research plan</em> — and see your map.</h2>
+      <div class="plan-grid">
+        <div class="plan-col">
+          <h4>Your research plan</h4>
+          <textarea class="activity-textarea" rows="3" placeholder="What's your research question?"></textarea>
+          <textarea class="activity-textarea" rows="3" placeholder="What kind of data do you need? (topic, unit, geography, time)"></textarea>
+          <textarea class="activity-textarea" rows="3" placeholder="What questions do you still have?"></textarea>
+        </div>
+        <div class="plan-col">
+          <h4>Your data source map</h4>
+          <div class="foraging-map">
+            <div class="fm-title">📊 Where to find your picks</div>
+            <div id="fm-content">
+              <div class="fm-empty">Go back to Activity 1 to pick data types — your personalized map will render here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Bring this map to your librarian appointment.</span>
+        <span>Slide 12 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13 · DATA SERVICES (moved to end) -->
+  <div class="slide" id="slide-13">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">💬</span> Data Services @ TUL</div>
+      <h2>What the libraries offer, in <em>four moves.</em></h2>
+      <a class="guide-link-banner" href="https://libguides.tulane.edu/data_services" target="_blank" rel="noopener">
+        <div class="glb-left">
+          <div class="glb-icon">💬</div>
+          <div>
+            <div class="glb-label">Book a consultation · Full guide</div>
+            <div class="glb-url">libguides.tulane.edu/data_services</div>
+          </div>
+        </div>
+        <div class="glb-arrow">→</div>
+      </a>
+      <p class="lead">Beyond finding data, the libraries help you plan, manage, analyze, and visualize it. These are the services you can book directly.</p>
+      <div class="services">
+        <a class="service" href="https://libguides.tulane.edu/data_services" target="_blank" rel="noopener">
+          <div class="service-glyph">💬</div>
+          <h4>RDM consultations</h4>
+          <p>One-on-one meetings to design a workflow for managing your project data end-to-end.</p>
+          <div class="cta">→ Schedule an appointment</div>
+        </a>
+        <a class="service" href="https://libguides.tulane.edu/data_services" target="_blank" rel="noopener">
+          <div class="service-glyph">📊</div>
+          <h4>Analysis &amp; visualization consultations</h4>
+          <p>Working sessions on Excel, Python, or R — for cleaning, analyzing, and visualizing data.</p>
+          <div class="cta">→ Schedule an appointment</div>
+        </a>
+        <a class="service" href="https://library.tulane.edu/About/Events-and-Workshops" target="_blank" rel="noopener">
+          <div class="service-glyph">🎓</div>
+          <h4>Workshops throughout the year</h4>
+          <p>Group sessions on data management, analysis, and visualization. Check the library events calendar.</p>
+          <div class="cta">→ Library events &amp; workshops</div>
+        </a>
+        <a class="service" href="https://dmptool.org/" target="_blank" rel="noopener">
+          <div class="service-glyph">📝</div>
+          <h4>DMPTool access via Tulane SSO</h4>
+          <p>A platform for building data management plans against funder templates — NSF, NIH, more. Collaborative.</p>
+          <div class="cta">→ dmptool.org</div>
+        </a>
+      </div>
+      <div class="slide-footer">
+        <span><strong>libguides.tulane.edu/data_services</strong></span>
+        <span>Slide 13 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14 · GET HELP -->
+  <div class="slide" id="slide-14">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">💬</span> Getting help</div>
+      <h2>You don't do this <em>alone.</em></h2>
+      <div class="contact-grid">
+        <div class="contact-left">
+          <h3>Bring a well-defined question — leave with a <em>plan.</em></h3>
+          <p>Before a librarian appointment, work through <em>who</em>, <em>what</em>, and <em>why</em> for the data you want. That short prep makes the consultation dramatically more productive.</p>
+          <p>Consultations, workshops, and appointments are all bookable through the Data Services guide.</p>
+        </div>
+        <div class="contact-card">
+          <div class="name">Kay P. Maye</div>
+          <div class="role">Scholarly Engagement Librarian · Resource &amp; Data Analyst</div>
+          <div class="line"><span class="k">Email</span><span class="v">kmaye@tulane.edu</span></div>
+          <div class="line"><span class="k">Phone</span><span class="v">504-865-5644</span></div>
+          <div class="line"><span class="k">Book</span><span class="v"><a href="https://bookings.cloud.microsoft/bookwithme/user/8bea60c180fb4b18b16ef9aef8980b28%40tulane.edu?anonymous&amp;ismsaljsauthenabled" target="_blank" rel="noopener">bookings.cloud.microsoft</a></span></div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>libguides.tulane.edu/data_services</strong></span>
+        <span>Slide 14 of 15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 · RELATED TRAILS -->
+  <div class="slide" id="slide-15">
+    <div class="content-slide">
+      <div class="slide-badge"><span class="leaf">📚</span> Where to go next</div>
+      <h2>Questions, and <em>related guides.</em></h2>
+      <p class="lead">Related library guides for going deeper into managing, curating, cleaning, and analyzing your data.</p>
+      <div class="related-list">
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Research Data Management</h5><span>libguides.tulane.edu/datamanagement</span></div></div>
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Data Curation, Preservation, and Reuse</h5><span>libguides.tulane.edu/datacuration</span></div></div>
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Data Analysis &amp; Visualization with Python</h5><span>libguides.tulane.edu/intro_dav_python</span></div></div>
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Data Cleaning and Inspection with Python</h5><span>libguides.tulane.edu/python_cleaning_inspection</span></div></div>
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Demographics, Data &amp; Statistics</h5><span>libguides.tulane.edu/demog</span></div></div>
+        <div class="related-item"><div class="dot"></div><div class="info"><h5>Data &amp; Statistical Portal · Matas Library</h5><span>libguides.tulane.edu/DataSets</span></div></div>
+      </div>
+      <div class="slide-footer">
+        <span><strong>Kay P Maye</strong> | Howard-Tilton Memorial Library</span>
+        <span>Slide 15 of 15</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="progress-bar" id="progress-bar"></div>
+
+<script>
+let currentSlide = 0;
+const totalSlides = 15;
+const slides = document.querySelectorAll('.slide');
+const pageSelector = document.getElementById('page-selector');
+const pageIndicator = document.getElementById('page-indicator');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const progressBar = document.getElementById('progress-bar');
+
+function showSlide(index) {
+  slides[currentSlide].classList.remove('active');
+  currentSlide = Math.max(0, Math.min(totalSlides - 1, index));
+  slides[currentSlide].classList.add('active');
+  pageSelector.value = currentSlide;
+  pageIndicator.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+  prevBtn.disabled = currentSlide === 0;
+  nextBtn.disabled = currentSlide === totalSlides - 1;
+  progressBar.style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+  window.scrollTo(0, 0);
+  if (currentSlide === 10) renderPicksSoFar();
+  if (currentSlide === 11) renderForagingMap();
+}
+function nextSlide() { if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1); }
+function prevSlide() { if (currentSlide > 0) showSlide(currentSlide - 1); }
+function goToSlide(index) { showSlide(index); }
+
+pageSelector.addEventListener('change', (e) => showSlide(parseInt(e.target.value, 10)));
+
+document.addEventListener('keydown', (e) => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+  switch (e.key) {
+    case 'ArrowRight': case 'PageDown': case ' ':
+      e.preventDefault(); nextSlide(); break;
+    case 'ArrowLeft': case 'PageUp':
+      e.preventDefault(); prevSlide(); break;
+    case 'Home': e.preventDefault(); showSlide(0); break;
+    case 'End': e.preventDefault(); showSlide(totalSlides - 1); break;
+  }
+});
+
+// ACTIVITY 1 — picks
+const selectedPicks = new Set();
+document.querySelectorAll('.pick-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const pick = card.dataset.pick;
+    if (selectedPicks.has(pick)) { selectedPicks.delete(pick); card.classList.remove('selected'); }
+    else { selectedPicks.add(pick); card.classList.add('selected'); }
+  });
+});
+
+// ACTIVITY 2 — checklist
+document.querySelectorAll('.check-row').forEach(row => {
+  row.addEventListener('click', () => row.classList.toggle('checked'));
+});
+
+// PICKS-SO-FAR — reflect Activity 1 picks on Activity 2
+const pickMeta = {
+  social: { icon: '\uD83D\uDC65', label: 'Social & demographic' },
+  gov:    { icon: '\uD83C\uDFDB\uFE0F', label: 'Government & policy' },
+  sci:    { icon: '\uD83E\uDDEC', label: 'Scientific' },
+  econ:   { icon: '\uD83D\uDCB9', label: 'Economic & business' },
+  geo:    { icon: '\uD83D\uDDFA\uFE0F', label: 'Geospatial' },
+  hist:   { icon: '\uD83D\uDCDC', label: 'Historical' },
+  health: { icon: '\u2695\uFE0F', label: 'Health' },
+  text:   { icon: '\uD83D\uDCDA', label: 'Text as data' }
+};
+function renderPicksSoFar() {
+  const container = document.getElementById('picks-so-far');
+  if (!container) return;
+  const chips = container.querySelector('.picks-chips');
+  const hint = container.querySelector('.ps-hint');
+  if (selectedPicks.size === 0) {
+    container.classList.add('empty');
+    chips.innerHTML = '';
+    hint.textContent = "Haven't picked yet — go back to Activity 1 first.";
+    return;
+  }
+  container.classList.remove('empty');
+  hint.textContent = '\u2192 these shape your Data Source Map on Activity 3';
+  chips.innerHTML = '';
+  selectedPicks.forEach(pick => {
+    const m = pickMeta[pick];
+    if (!m) return;
+    const chip = document.createElement('span');
+    chip.className = 'picks-chip';
+    chip.textContent = m.icon + ' ' + m.label;
+    chips.appendChild(chip);
+  });
+}
+
+// FORAGING MAP
+const mapContent = {
+  social: { title: 'Social &amp; demographic data', body: 'US Census (Social Explorer walkthrough in the guide), ICPSR archives, General Social Survey, polls &amp; surveys section.', src: 'libguides.tulane.edu/socialsciencedata' },
+  gov: { title: 'Government &amp; policy data', body: 'Federal agencies (BLS, CDC, ERS/USDA), Louisiana state (LDEQ), NOLA IT&amp;I, non-US via data.un.org.', src: 'libguides.tulane.edu/socialsciencedata/statisticsUSA' },
+  sci: { title: 'Scientific &amp; research data', body: 'Start with re3data or Nature\'s repository guidance. Then discipline repositories — PDB, GBIF, HEPData, NASA Earthdata, and more.', src: 'libguides.tulane.edu/scidata' },
+  econ: { title: 'Economic &amp; business data', body: 'Business data section of the Social Sciences guide — industry stats, firm-level data, market research subscriptions.', src: 'libguides.tulane.edu/socialsciencedata' },
+  geo: { title: 'Geospatial / GIS data', body: 'GIS data section of the Social Sciences guide. For scientific layers, cross-reference NASA GES DISC and ORNL DAAC.', src: 'libguides.tulane.edu/socialsciencedata' },
+  hist: { title: 'Historical data', body: 'Historical Data section of the Social Sciences guide. For older data, the library catalog often surfaces printed statistical compendia.', src: 'libguides.tulane.edu/socialsciencedata' },
+  health: { title: 'Health &amp; public health data', body: 'Public Health topic section (Social Sciences), CDC and NIH via the Scientific guide, and the Matas Library Data &amp; Statistical Portal.', src: 'libguides.tulane.edu/DataSets' },
+  text: { title: 'Text as data', body: 'Text Data section of the Social Sciences guide. For workflow help, see the Python cleaning and analysis guides.', src: 'libguides.tulane.edu/socialsciencedata' }
+};
+function renderForagingMap() {
+  const target = document.getElementById('fm-content');
+  if (!target) return;
+  if (selectedPicks.size === 0) {
+    target.innerHTML = '<div class="fm-empty">Go back to Activity 1 to pick data types — your personalized data source map will render here.</div>';
+    return;
+  }
+  let html = '';
+  selectedPicks.forEach(pick => {
+    const m = mapContent[pick];
+    if (!m) return;
+    html += '<div class="fm-item"><h5>' + m.title + '</h5><p>' + m.body + '</p><span class="fm-src">' + m.src + '</span></div>';
+  });
+  target.innerHTML = html;
+}
+
+showSlide(0);
+</script>
+
+</body>
+</html>
